@@ -1,0 +1,37 @@
+Python version: 3.13.4 (tags/v3.13.4:8a526ec, Jun  3 2025, 17:46:04) [MSC v.1943 64 bit (AMD64)]
+Working directory: C:\Users\51273\Desktop\机器学习4
+
+Loading YOLOv8n model...
+Model loaded successfully
+
+Starting training...
+==================================================
+
+Error during training: Dataset '4/data.yaml' error  Dataset '4/data.yaml' images not found, missing path 'C:\Users\51273\Desktop\4\val\images'
+Note dataset download directory is 'C:\Users\51273\Desktop\4\4\datasets'. You can update this in 'C:\Users\51273\AppData\Roaming\Ultralytics\settings.json'
+Traceback (most recent call last):
+  File "C:\Users\51273\AppData\Roaming\Python\Python313\site-packages\ultralytics\engine\trainer.py", line 707, in get_dataset
+    data = check_det_dataset(self.args.data)
+  File "C:\Users\51273\AppData\Roaming\Python\Python313\site-packages\ultralytics\data\utils.py", line 492, in check_det_dataset
+    raise FileNotFoundError(m)
+FileNotFoundError: Dataset '第4次实验数据及提交格式/data.yaml' images not found, missing path 'C:\Users\51273\Desktop\机器学习4\val\images'
+Note dataset download directory is 'C:\Users\51273\Desktop\机器学习4\第4次实验数据及提交格式\datasets'. You can update this in 'C:\Users\51273\AppData\Roaming\Ultralytics\settings.json'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\51273\Desktop\机器学习4\train_detailed.py", line 21, in <module>
+    results = model.train(
+        data="第4次实验数据及提交格式/data.yaml",
+    ...<6 lines>...
+        workers=0
+    )
+  File "C:\Users\51273\AppData\Roaming\Python\Python313\site-packages\ultralytics\engine\model.py", line 783, in train
+    self.trainer = (trainer or self._smart_load("trainer"))(overrides=args, _callbacks=self.callbacks)
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\51273\AppData\Roaming\Python\Python313\site-packages\ultralytics\models\yolo\detect\train.py", line 63, in __init__
+    super().__init__(cfg, overrides, _callbacks)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\51273\AppData\Roaming\Python\Python313\site-packages\ultralytics\engine\trainer.py", line 186, in __init__
+    self.data = self.get_dataset()
+                ~~~~~~~~~~~~~~~~^^
