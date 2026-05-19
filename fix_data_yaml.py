@@ -1,5 +1,10 @@
+# 更新data.yaml使用绝对路径
+import os
 
-path: C:/Users/51273/Desktop/机器学习4/第4次实验数据及提交格式
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "traffic_signs_data")
+
+data_yaml = f"""path: {data_dir}
 train: train/images
 val: val/images
 test: test/images
@@ -20,3 +25,9 @@ names:
   12: Speed Limit 80
   13: Speed Limit 90
   14: Stop
+"""
+
+with open(os.path.join(data_dir, "data.yaml"), "w") as f:
+    f.write(data_yaml)
+
+print("data.yaml已更新，使用绝对路径:", data_dir)

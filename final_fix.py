@@ -1,32 +1,24 @@
 """
-简单直接的提交文件生成脚本
+最终修复脚本 - 创建有效的提交文件
 """
 
 from ultralytics import YOLO
 import csv
 import os
 
-# 确保删除旧的提交文件
-if os.path.exists("submission.csv"):
-    os.remove("submission.csv")
-    print("Deleted old submission.csv")
+print("Creating submission.csv...")
 
 # 加载模型
 model = YOLO("runs/detect/traffic_signs_complete/weights/best.pt")
 
-# 设置参数
 test_dir = "第4次实验数据及提交格式/test/images"
-conf_threshold = 0.15
-
-# 获取测试图像
 image_files = sorted([f for f in os.listdir(test_dir) if f.endswith('.jpg')])
-print(f"Processing {len(image_files)} images with conf={conf_threshold}")
 
-# 生成预测
+# 使用较低阈值确保有预测
 predictions = []
 for img_name in image_files:
     img_path = os.path.join(test_dir, img_name)
-    results = model.predict(source=img_path, conf=conf_threshold, verbose=False)
+    results = model.predict(source=img_path, conf=0.05, verbose=False)
     
     if results[0].boxes is not None:
         for box in results[0].boxes:
@@ -40,19 +32,12 @@ for img_name in image_files:
                 "confidence": float(box.conf[0].item()),
             })
 
+print(f"Found {len(predictions)} predictions")
+
 # 写入提交文件
 with open("submission.csv", "w", encoding="utf-8", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=["image_id", "class_id", "x_center", "y_center", "width", "height", "confidence"])
     writer.writeheader()
     writer.writerows(predictions)
 
-# 统计
-from collections import Counter
-class_counts = Counter(p['class_id'] for p in predictions)
-avg_conf = sum(p['confidence'] for p in predictions) / len(predictions)
-
-print(f"\nGenerated {len(predictions)} predictions")
-print(f"Average confidence: {avg_conf:.4f}")
-print("\nClass distribution:")
-for cid in range(15):
-    print(f"  Class {cid}: {class_counts.get(cid, 0)}")
+print("submission.csv created successfully!")

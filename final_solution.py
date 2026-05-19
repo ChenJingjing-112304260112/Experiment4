@@ -1,83 +1,68 @@
 """
-完整解决方案 - 解决低分数问题
+最终解决方案 - 完整训练和推理流程
 """
 
-from ultralytics import YOLO
-import csv
-from pathlib import Path
 import subprocess
+import sys
 
-def main():
-    print("="*70)
-    print("COMPLETE SOLUTION - TRAINING & INFERENCE")
-    print("="*70)
+def train_and_infer():
+    print("="*60)
+    print("Final Solution - Complete Training & Inference")
+    print("="*60)
     
-    # Step 1: 重新训练模型
-    print("\n[Step 1] Training model with optimized parameters...")
+    # 步骤1: 使用YOLOv8s进行完整训练
+    print("\nStep 1: Starting training...")
+    
+    from ultralytics import YOLO
     model = YOLO('yolov8s.pt')
     
+    # 训练参数
     results = model.train(
         data='第4次实验数据及提交格式/data.yaml',
-        epochs=200,           # 大幅增加训练轮数
+        epochs=150,
         batch=2,
         imgsz=640,
         optimizer='AdamW',
         lr0=0.001,
-        lrf=0.01,
         cos_lr=True,
-        warmup_epochs=10,
-        box=7.5,
-        cls=1.0,
-        patience=50,
-        name='traffic_signs_final_solution',
+        augment=True,
+        name='final_traffic_signs',
         verbose=True,
         device='cpu',
-        augment=True,
-        hsv_h=0.015,
-        hsv_s=0.7,
-        hsv_v=0.4,
-        degrees=10.0,
-        translate=0.1,
-        scale=0.5,
-        fliplr=0.5
+        patience=30
     )
     
-    # Step 2: 验证模型
-    print("\n[Step 2] Validating model...")
+    # 步骤2: 验证模型
+    print("\nStep 2: Validating model...")
     metrics = model.val()
     mAP50 = metrics.results_dict.get('metrics/mAP50(B)', 0)
-    precision = metrics.results_dict.get('metrics/precision(B)', 0)
-    recall = metrics.results_dict.get('metrics/recall(B)', 0)
+    print(f"Validation mAP50: {mAP50:.4f}")
     
-    print(f"\nValidation Results:")
-    print(f"  mAP50: {mAP50:.4f}")
-    print(f"  Precision: {precision:.4f}")
-    print(f"  Recall: {recall:.4f}")
+    # 步骤3: 生成提交文件
+    print("\nStep 3: Generating submission...")
+    import csv
+    from pathlib import Path
     
-    # Step 3: 生成提交文件
-    print("\n[Step 3] Generating submission...")
     test_dir = "第4次实验数据及提交格式/test/images"
     output_path = "submission.csv"
     
     image_paths = sorted([p for p in Path(test_dir).iterdir() if p.is_file()])
     predictions = []
     
-    # 使用TTA和优化参数
-    for img_path in image_paths:
+    for idx, img_path in enumerate(image_paths):
         results = model.predict(
             source=str(img_path),
-            conf=0.15,
+            conf=0.25,
             iou=0.45,
             imgsz=640,
             verbose=False,
-            device='cpu',
-            augment=True
+            device='cpu'
         )
         
         if results[0].boxes is not None:
             for box in results[0].boxes:
                 conf = float(box.conf[0].item())
-                if conf >= 0.15:
+                if conf >= 0.25:
                     predictions.append({
                         "image_id": img_path.name,
                         "class_id": int(box.cls[0].item()),
@@ -94,24 +79,22 @@ def main():
         writer.writerows(predictions)
     
     avg_conf = sum(p['confidence'] for p in predictions) / len(predictions)
+    print(f"Generated {len(predictions)} predictions")
+    print(f"Average confidence: {avg_conf:.4f}")
     
-    # Step 4: 上传到GitHub
-    print("\n[Step 4] Uploading to GitHub...")
-    subprocess.run(["git", "add", "submission.csv", "complete_solution.py"])
-    subprocess.run(["git", "commit", "-m", f"Complete solution: {len(predictions)} preds, mAP50={mAP50:.4f}"])
+    # 步骤4: 上传到GitHub
+    print("\nStep 4: Uploading to GitHub...")
+    subprocess.run(["git", "add", "submission.csv", "final_solution.py"])
+    subprocess.run(["git", "commit", "-m", f"Final solution: {len(predictions)} preds, mAP50={mAP50:.4f}"])
     subprocess.run(["git", "push", "origin", "main"])
     
-    # 最终结果
-    print("\n" + "="*70)
-    print("RESULTS SUMMARY")
-    print("="*70)
+    print("\n" + "="*60)
+    print("COMPLETE!")
+    print("="*60)
     print(f"Submission file: submission.csv")
-    print(f"Total predictions: {len(predictions)}")
+    print(f"Predictions: {len(predictions)}")
     print(f"Average confidence: {avg_conf:.4f}")
     print(f"Validation mAP50: {mAP50:.4f}")
-    print(f"Validation Precision: {precision:.4f}")
-    print(f"Validation Recall: {recall:.4f}")
-    print("="*70)
 
 if __name__ == "__main__":
-    main()
+    train_and_infer()
